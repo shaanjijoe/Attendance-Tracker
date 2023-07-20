@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Table Contents</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+
+        /* Style the buttons as inline elements */
+        form {
+            display: inline;
+        }
+
+        /* Add spacing between the buttons */
+        form:not(:last-child) {
+            margin-right: 10px;
+        }
+
+        /* Style the modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.4);
+        }
+
+        /* Style the modal content */
+        .modal-content {
+            background-color: white;
+            margin: 15% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+        }
+    </style>
+</head>
+<body>
+    <h1>Table: {{ table_name }}</h1>
+
+    <h2>Table Contents:</h2>
+    <table>
+        <thead>
+            <tr>
+                <th>Day</th>
+                {% for day, data in dictionary_data.items() %}
+                    {% for item in data %}
+                        <th>{{ item[2] }}</th>
+                    {% endfor %}
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for day, data in dictionary_data.items() %}
+                <tr>
+                    <td>{{ day }}</td>
+                    {% for item in data %}
+                        <td>{{ item[0] }} - {{ item[1] }}</td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <br>
+    <div>
+        {% for day, data in dictionary_data.items() %}
+            <form method="POST" action="/add_period" class="add-period-form">
+                <input type="hidden" name="day" value="{{ day }}">
+                <button type="button" class="add-period-button">Add Period for {{ day }}</button>
+            </form>
+        {% endfor %}
+    </div>
+
+        <!-- Modal Popup -->
+        <div class="modal">
+            <div class="modal-content">
+                <h2>Add Period</h2>
+                <form method="POST" action="/add_period" id="add-period-form">
+                    <input type="hidden" name="day" id="modal-day" value="">
+                    <label for="period_name">Period Name:</label>
+                    <input type="text" name="period_name" id="period_name" required>
+                    <label for="start_time">Start Time:</label>
+                    <input type="text" name="start_time" id="start_time" required>
+                    <label for="end_time">End Time:</label>
+                    <input type="text" name="end_time" id="end_time" required>
+                    <button type="submit">Add Period</button>
+                </form>
+            </div>
+        </div>
+    
+        <script>
+            const addButtons = document.querySelectorAll('.add-period-button');
+            const modal = document.querySelector('.modal');
+            const modalDay = document.getElementById('modal-day');
+            const addPeriodForm = document.getElementById('add-period-form');
+    
+            addButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    modalDay.value = this.parentElement.querySelector('[name="day"]').value;
+                    modal.style.display = 'block';
+                });
+            });
+    
+            modal.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+    
+            addPeriodForm.addEventListener('submit', function(event) {
+                event.preventDefault();
+                const formData = new FormData(addPeriodForm);
+                const request = new XMLHttpRequest();
+                request.open('POST', '/add_period');
+                request.onreadystatechange = function() {
+                    if (request.readyState === 4) {
+                        if (request.status === 200) {
+                            const response = JSON.parse(request.responseText);
+                            alert(response.message);
+                            if (response.success) {
+                                // If successful, reload the page to show the updated table
+                                location.reload();
+                            }
+                        } else {
+                            alert('An error occurred while adding the period.');
+                        }
+                    }
+                };
+                request.send(formData);
+            });
+        </script>
+    </body>
+    </html>

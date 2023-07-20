@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance Tracker Website</title>
+</head>
+<body>
+    <h1>Attendance Tracker Website</h1>
+    <h2>Welcome {{ username }}</h2>
+
+    <h3>Tables:</h3>
+    {% for table in user_data %}
+        <a href="/table/{{ username }}/{{ table }}"><button>{{ table }}</button></a>
+    {% endfor %}
+
+    <br>
+    <form method="POST" action="/create_table" id="add-activity-form">
+        <input type="text" name="activity_name" placeholder="Enter Activity Name" required>
+        <button type="submit">Add Activity</button>
+    </form>
+
+    <script>
+        document.getElementById("add-activity-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+            var form = document.getElementById("add-activity-form");
+            var formData = new FormData(form);
+            
+            // Add the username to the form data
+            formData.append('username', "{{ username }}");
+            
+            var request = new XMLHttpRequest();
+            request.open("POST", "/create_table");
+            request.onreadystatechange = function() {
+                if (request.readyState === 4) {
+                    if (request.status === 200) {
+                        var response = JSON.parse(request.responseText);
+                        if (response.success) {
+                            alert(response.message);
+                            location.reload();
+                        } else {
+                            alert(response.message);
+                        }
+                    } else {
+                        alert('An error occurred while processing the request.');
+                    }
+                }
+            };
+            request.send(formData);
+        });
+    </script>
+    
+    
+</body>
+</html>
