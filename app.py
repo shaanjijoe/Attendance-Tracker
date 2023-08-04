@@ -173,7 +173,7 @@ def display_table(username, table_name):
     dictionary_data=period.getallperiod(username+'$'+table_name)
     print(dictionary_data)
     
-    return render_template('table.html', table_name=table_name, dictionary_data=dictionary_data)
+    return render_template('table.html', table_name=table_name, dictionary_data=dictionary_data,user_name=username)
 
 
 
@@ -185,14 +185,23 @@ def add_period():
     period_name = request.form['period_name']
     start_time = request.form['start_time']
     end_time = request.form['end_time']
-
-    print(day,period_name,start_time,end_time)
+    username = request.form['user_name']
+    table_name = request.form['table_name']
+    print(day,period_name,start_time,end_time,username,table_name)
     # Code to add the period for the selected day to the database
     # ...
+    username=username.strip()
+    table_name=table_name.strip()
+    dat=username+'$'+table_name
+    print(dat)
+    outp=period.insertperiod(username+'$'+table_name, day,[start_time,end_time,period_name])
 
     # After adding the period, you can redirect to the table page or return a response
     # For example:
-    return jsonify({'success': True, 'message': 'Period added successfully'})
+    if(outp==True):
+        return jsonify({'success': True, 'message': 'Period added successfully'})
+    else:
+        return jsonify({'success': False, 'message': 'Error'})
 
 
 
